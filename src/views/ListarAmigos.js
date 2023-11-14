@@ -1,14 +1,36 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Text, StyleSheet, View, FlatList, Image, TouchableOpacity } from "react-native";
+import { SearchBar } from '@rneui/themed';
+
+
 
 export default props => {
 
     const [amigos, setAmigos] = useState([])
+    const [search, setSearch] = useState("")
 
-    fetch('https://josmauricio.pythonanywhere.com/api/amigos/')
-        .then(data => data.json())
-        .then(json => setAmigos(json.results))
-        .catch(error => console.warn(error))
+    useEffect(() => {
+        fetch('https://josmauricio.pythonanywhere.com/api/amigos/')
+            .then(data => data.json())
+            .then(json => setAmigos(json.results))
+            .catch(error => console.warn(error))
+    }, [])
+
+
+    const updateSearch = (q) => {
+        setSearch(q);
+        if (search == "") {
+            fetch('https://josmauricio.pythonanywhere.com/api/amigos/')
+                .then(data => data.json())
+                .then(json => setAmigos(json.results))
+                .catch(error => console.warn(error))
+        } else {
+            fetch(`https://josmauricio.pythonanywhere.com/api/amigos/?search=${search}`)
+                .then(data => data.json())
+                .then(json => setAmigos(json.results))
+                .catch(error => console.warn(error))
+        }
+    };
 
     const ProductCard = ({ item }) => {
         return (
@@ -26,6 +48,12 @@ export default props => {
 
     return (
         <View style={styles.container}>
+            <SearchBar
+                placeholder="Buscar podologo..."
+                onChangeText={updateSearch}
+                value={search}
+                platform="android"
+            />
             <FlatList
                 data={amigos}
                 style={styles.productList}
